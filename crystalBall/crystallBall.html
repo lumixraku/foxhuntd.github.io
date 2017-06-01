@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<body>
+    <canvas width="1200" height="800" id="my_Canvas"></canvas>
+    <script src="shader.js"></script>
+    <script src="buffer.js"></script>
+    <script src="texture.js"></script>
+    <script src="framebuffer.js"></script>
+    <script src="gl-matrix.js"></script>
+    <script src="camera.js"></script>
+    <script src="utilities.js"></script>
+
+    <script>
+        var textLoaded = false;
+        var imagedLoaded = false;
+        var texts;
+        var images;
+        loadTextFiles(["cubeShader.vert", "cubeShader.frag", "quadShader.vert", "quadShader.frag"], function (result) {
+            textLoaded = true;
+            texts = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+        loadImages(["5841762-image.jpg", "crackedmud1.jpg", "RT_VolumeBake_01_CloudCave_4k.png"], function (result) {
+            imagedLoaded = true;
+            images = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+
+        function onLoaded()
+        {
+
+         /*================Creating a canvas=================*/
+         var canvas = document.getElementById('my_Canvas');
+         gl = canvas.getContext('experimental-webgl');
+         var camera = new Camera(canvas, [0,0,0]);
+         canvas.addEventListener('mousemove', function (event) {
+             camera.onMouseMove(event);
+         });
+         canvas.addEventListener('mousedown', function (event) {
+             camera.onMouseDown(event);
+         });
+         document.addEventListener('mouseup', function (event) {
+             camera.onMouseUp(event);
+         });
+         /*==========Defining and storing the geometry=======*/
+         var boxVertices =
+         [ // X, Y, Z           U, V
+             // Top
+             -1.0, 1.0, -1.0, 0, 0,
+             -1.0, 1.0, 1.0, 0, 1,
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, 1.0, -1.0, 1, 0,
+
+             // Left
+             -1.0, 1.0, 1.0, 0, 0,
+             -1.0, -1.0, 1.0, 1, 0,
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, 1.0, -1.0, 0, 1,
+
+             // Right
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, -1.0, 1.0, 0, 1,
+             1.0, -1.0, -1.0, 0, 0,
+             1.0, 1.0, -1.0, 1, 0,
+
+             // Front
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, -1.0, 1.0, 1, 0,
+             -1.0, -1.0, 1.0, 0, 0,
+             -1.0, 1.0, 1.0, 0, 1,
+
+             // Back
+             1.0, 1.0, -1.0, 0, 0,
+             1.0, -1.0, -1.0, 0, 1,
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, 1.0, -1.0, 1, 0,
+
+             // Bottom
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, -1.0, 1.0, 1, 0,
+             1.0, -1.0, 1.0, 0, 0,
+             1.0, -1.0, -1.0, 0, 1,
+         ];
+
+         var boxIndices =
+         [
+             // Top
+             0, 1, 2,
+             0, 2, 3,
+
+             // Left
+             5, 4, 6,
+             6, 4, 7,
+
+             // Right
+             8, 9, 10,
+             8, 10, 11,
+
+             // Front
+             13, 12, 14,
+             15, 14, 12,
+
+             // Back
+             16, 17, 18,
+             16, 18, 19,
+
+             // Bottom
+             21, 20, 22,
+             22, 20, 23
+         ];
+
+         var quadvertices = [
+        -1, 1, 0,
+        -1, -1, 0,
+        1, -1, 0,
+        1, 1, 0
+         ];
+
+         var quadindices = [3, 2, 1, 3, 1, 0];
+         var quadpointers = [Pointer("coordinate", 3, 0)];
+
+         var quadbuffer = new ArrayBuffer(gl.TRIANGLES, 3, quadpointers, quadvertices, quadindices);
+         var quadVertCode = texts["quadShader.vert"];
+         var quadFragCode = texts["quadShader.frag"];
+         var quadShader = new Shader(quadVertCode, quadFragCode);
+
+         var vertCode = texts["cubeShader.vert"];
+         var fragCode = texts["cubeShader.frag"];
+         var shader = new Shader(vertCode, fragCode);
+         var pointers = [Pointer("coordinate", 3, 0), Pointer("uv", 2, 3)];
+         var buffer = new ArrayBuffer(gl.TRIANGLES, 5, pointers, boxVertices, boxIndices);
+         buffer.bind(shader);
+         shader.use();
+
+         var worldMatrix = new Float32Array(16);
+         var viewMatrix = new Float32Array(16);
+         var projMatrix = new Float32Array(16);
+         mat4.identity(worldMatrix);
+         mat4.perspective(projMatrix, glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 100.0);
+         shader.setUniform("mWorld", "mat4", worldMatrix);
+         shader.setUniform("mProj", "mat4", projMatrix);
+         shader.setUniform("screen", "vec2", [canvas.width,canvas.height]);
+         quadShader.use();
+         quadShader.setUniform("resolution", "vec2", [canvas.width, canvas.height]);
+         quadShader.setUniform("noise", "float", .04);
+         quadShader.setUniform("color", "vec3", [36. / 255., 70. / 255., 106. / 255.]);
+
+         var im = images["RT_VolumeBake_01_CloudCave_4k.png"];
+         var tex = new Texture().image(im);
+         var xRotationMatrix = new Float32Array(16);
+         var yRotationMatrix = new Float32Array(16);
+
+         //
+         // Main render loop
+        //
+         gl.enable(gl.DEPTH_TEST);
+         var identityMatrix = new Float32Array(16);
+         var mvpInverse = new Float32Array(16);
+         var mv = new Float32Array(16);
+         var mpv = new Float32Array(16);
+         mat4.identity(identityMatrix);
+         var angle = 23;
+         var time = 0.0;
+
+
+         
+         var update = function()
+         {
+             setupCanvas(canvas);
+
+             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+             gl.disable(gl.BLEND);
+             quadShader.use();
+             quadbuffer.bind(quadShader);
+             quadbuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             gl.enable(gl.BLEND);
+
+             time += 0.01666;
+             angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+             mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+             mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
+             //mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
+             shader.use();
+
+             shader.setUniform("mWorld", "mat4", worldMatrix);
+             shader.setUniform("mView", "mat4", camera.getViewMatrix());
+             shader.setUniform("time", "float", time);
+             shader.setUniform("cam", "vec3", camera.getPosition());
+
+             mat4.mul(mv, camera.getViewMatrix(), worldMatrix);
+
+             mat4.mul(mpv, projMatrix, mv);
+             mat4.invert(mvpInverse, mpv);
+             shader.setUniform("mvpInverse", "mat4", mvpInverse);
+
+             shader.sampler("uSampler", tex);
+
+             buffer.bind(shader);
+             buffer.draw();
+
+
+
+             requestAnimationFrame(function ()
+             { update()});
+         }
+         update();
+        }
+    </script>
+</body>
+</html>
