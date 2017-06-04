@@ -357,6 +357,8 @@
              
          }
          function drawBursh(t) {
+             velocity0Tex.size(simulationRes, simulationRes, gl.FLOAT);
+             velocity1Tex.size(simulationRes, simulationRes, gl.FLOAT);
              gl.clearColor(0, 0, 0, 0);
              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
              gl.viewport(0, 0, canvas.width, canvas.height);
@@ -370,17 +372,22 @@
              burshShader.setUniform("distance", "float", camera.distance);
 
              burshShader.setUniform("time", "float", t);
+             burshShader.setUniform("time2", "float", time);
 
              burshBuffer.bind(burshShader);
              burshBuffer.draw();
              gl.clear(gl.DEPTH_BUFFER_BIT);
 
              unBindFrameBuffer();
-             color0Tex.size(imageRes, imageRes);
+
+             //velocity1Tex.size(simulationRes, simulationRes);
 
          }
          drawBursh(1);
          function drawBursh2(t) {
+             color0Tex.size(imageRes, imageRes);
+             color1Tex.size(imageRes, imageRes);
+
              gl.clearColor(0, 0, 0, 0);
              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
              gl.viewport(0, 0, canvas.width, canvas.height);
@@ -393,13 +400,13 @@
              burshShader.setUniform("distance", "float", camera.distance);
 
              burshShader.setUniform("time", "float", t);
+             burshShader.setUniform("time2", "float", time);
 
              burshBuffer.bind(burshShader);
              burshBuffer.draw();
              gl.clear(gl.DEPTH_BUFFER_BIT);
 
              unBindFrameBuffer();
-            // color1Tex.size(imageRes, imageRes);
          }
 
          drawBursh2(0);
@@ -409,14 +416,12 @@
          {
 
               counter++;
-              if (counter % 200 == 1)
+              if (counter % 250 == 1)
               {
                   drawBursh(1);
                   drawBursh2(0);
 
-                  requestAnimationFrame(function ()
-                  { update() });
-                  return;
+
 
               }
              gl.disable(gl.BLEND);
