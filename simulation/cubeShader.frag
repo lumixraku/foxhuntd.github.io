@@ -6,6 +6,7 @@ uniform mat4 mvpInverse;
 uniform float time;
 uniform vec3 cam;
 uniform vec2 screen;
+uniform float XYFrames;   // Advected velocity field, u_a \n\
 
 vec4 sphere = vec4(0.0, 0.0, 0.0, 1.);
 
@@ -253,7 +254,6 @@ vec4 integrate( in vec4 sum, in float dif, in float den, in vec3 bgcol, in float
     return sum + col*(1.0-sum.a);
 }
 float mapLod(vec3 pos){
-	float XYFrames = 8.;
 	float numFrames = XYFrames*XYFrames;
 	return PseudoVolumeTexture(uSampler, pos*0.5+0.5, XYFrames, numFrames).x;
 }
