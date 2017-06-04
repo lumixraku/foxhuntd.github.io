@@ -31,7 +31,7 @@ vec3 encodeVolumeCoordinates(vec2 uv,float XYFrames)
 	vec2 xyphase = fract(uv * XYFrames);
 	float zphase = Tile2Dto1D(XYFrames,xyframe)/frameNumber;
 	//Precision Fix for converting back to 2d later. 0.00001
-	zphase +=0.00001;
+	zphase += 0.00000001;
 	return vec3(xyphase,zphase);
 }
 
@@ -100,8 +100,12 @@ float diff_p_y = (p(offsetY.zw) -
                     p(offsetY.xy)); 
 float u_y = u_a.y - deltaT/(2.0 * epsilon ) * diff_p_y; 
 
+float diff_p_z = (p(offsetZ.xy) - 
+                    p(offsetZ.zw)); 
+//diff_p_z= 0.0;
+float u_z = u_a.z - deltaT/(2.0 * epsilon ) * diff_p_z; 
 
-gl_FragColor = vec4(u_x, u_y, 0., 0.0); 
+gl_FragColor = vec4(u_x, u_y, u_z, 0.0); 
 
 
 /*
