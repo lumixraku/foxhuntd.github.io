@@ -4,6 +4,7 @@ uniform float resolution;        // Distance between grid units \n\
 uniform sampler2D divergence; // Divergence field of advected velocity, d \n\
 uniform sampler2D pressure;   // Pressure field from previous iteration, p^(k-1) \n\
 uniform float epsilon;   // Advected velocity field, u_a \n\
+uniform float XYFrames;   // Advected velocity field, u_a \n\
 
 vec4 sphere = vec4(0.0, 0.0, 0.0,1.);
 
@@ -84,7 +85,6 @@ float p(vec2 coord) {
         return texture2D(pressure, fract(coord)).x; 
 } 
 void main(void) {
-float XYFrames = 8.;
 vec4 offsetX = volumeOffsetX(vUv,resolution*0.5,XYFrames);
 vec4 offsetY = volumeOffsetY(vUv,resolution*0.5,XYFrames);
 vec4 offsetZ = volumeOffsetZ(vUv,XYFrames);
