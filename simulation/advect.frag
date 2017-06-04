@@ -5,6 +5,7 @@ uniform float resolution;
 uniform sampler2D inputTexture; 
 uniform sampler2D velocity; 
 uniform float epsilon;   // Advected velocity field, u_a \n\
+uniform float XYFrames;   // Advected velocity field, u_a \n\
 
 vec4 sphere = vec4(0.0, 0.0, 0.0,1.);
 
@@ -98,20 +99,19 @@ vec3 u(vec2 coord) {
 } 
 
 void main(void) {
-float XYFrames = 8.;
 float numFrames = XYFrames*XYFrames;
 vec4 offsetX = volumeOffsetX(vUv,resolution,XYFrames);
 vec4 offsetY = volumeOffsetY(vUv,resolution,XYFrames);
 vec4 offsetZ = volumeOffsetZ(vUv,XYFrames);
-vec2 vel = texture2D(velocity, vUv).xy;
+vec3 vel = texture2D(velocity, vUv).xyz;
 
 vel *= deltaT*0.5;
 
 
 vec3 pos = encodeVolumeCoordinates(vUv,XYFrames);
-pos.xy -= vel.xy;
+pos -= vel;
 
-gl_FragColor = PseudoVolumeTexture(inputTexture,pos,XYFrames, numFrames);
+gl_FragColor = PseudoVolumeTexture(inputTexture,pos,XYFrames, numFrames)*0.99;
  
 
  //
