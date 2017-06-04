@@ -6,6 +6,7 @@ uniform float epsilon;   // Advected velocity field, u_a \n\
 
 uniform float deltaT;         // Time between steps \n\
 uniform sampler2D velocity;   // Advected velocity field, u_a \n\
+uniform float XYFrames;   // Advected velocity field, u_a \n\
 
 vec4 sphere = vec4(0.0, 0.0, 0.0,1.);
 
@@ -79,13 +80,12 @@ vec4 volumeOffsetZ(vec2 uv,float XYFrames){
 	return vec4(uv+zP*zPphase,uv+zM*zMphase);
 }
 
-vec2 u(vec2 coord) { 
-        return texture2D(velocity, fract(coord)).xy; 
+vec3 u(vec2 coord) { 
+        return texture2D(velocity, fract(coord)).xyz; 
 } 
 
 void main(void) {
 
-float XYFrames = 8.;
 vec4 offsetX = volumeOffsetX(vUv,resolution,XYFrames);
 vec4 offsetY = volumeOffsetY(vUv,resolution,XYFrames);
 vec4 offsetZ = volumeOffsetZ(vUv,XYFrames);
@@ -97,6 +97,9 @@ gl_FragColor = vec4((-2.0 * epsilon / deltaT) * (
     + 
     (u(offsetY.zw).y - 
     u(offsetY.xy).y) 
+    + 
+    (u(offsetZ.xy).z - 
+    u(offsetZ.zw).z) 
 ), 0.0, 0.0, 1.0); 
 
 
