@@ -16,14 +16,14 @@
         var XYFrames = 8;
         var texts;
         var images;
-        loadTextFiles(["fullscreen.vert", "advect.frag", "divergence.frag", "pressure.frag", "gradientSub.frag", "cubeShader.vert", "cubeShader.frag", "quadShader.vert", "quadShader.frag", "bursh.vert", "bursh.frag", "pressure.frag"], function (result) {
+        loadTextFiles([ "fullscreen.vert", "advect.frag", "divergence.frag", "pressure.frag", "gradientSub.frag", "cubeShader.vert", "cubeShader.frag", "quadShader.vert", "quadShader.frag", "bursh.vert", "bursh.frag", "pressure.frag"], function (result) {
             textLoaded = true;
             texts = result;
             if (textLoaded && imagedLoaded) {
                 onLoaded();
             }
         });
-        loadImages(["5841762-image.jpg", "crackedmud1.jpg"], function (result) {
+        loadImages(["blue.jpg", "5841762-image.jpg", "crackedmud1.jpg"], function (result) {
             imagedLoaded = true;
             images = result;
             if (textLoaded && imagedLoaded) {
@@ -113,7 +113,8 @@
          var color0Tex = new Texture().size(imageRes, imageRes);
          var color1Tex = new Texture().size(imageRes, imageRes);
          var divergenceTex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
-         //var im = images["5841762-image.jpg"];
+         var im = images["blue.jpg"];
+         var bunnyTex = new Texture().image(im);
          /*==========Defining and storing the geometry=======*/
          var boxVertices =
          [ // X, Y, Z           U, V
@@ -404,7 +405,7 @@
              burshShader.setUniform("camVec", "vec3", camera.getMouseRay(fov, mouseX, mouseY));
              burshShader.setUniform("cam", "vec3", camera.getPosition());
              burshShader.setUniform("distance", "float", camera.distance);
-
+             burshShader.sampler("curl", bunnyTex);
              burshShader.setUniform("time", "float", t);
              burshShader.setUniform("time2", "float", time);
 
@@ -426,8 +427,6 @@
               {
                   drawBursh(1);
                   drawBursh2(0);
-
-
 
               }
              gl.disable(gl.BLEND);
