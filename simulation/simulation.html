@@ -13,6 +13,7 @@
     <script>
         var textLoaded = false;
         var imagedLoaded = false;
+        var XYFrames = 8;
         var texts;
         var images;
         loadTextFiles(["fullscreen.vert", "advect.frag", "divergence.frag", "pressure.frag", "gradientSub.frag", "cubeShader.vert", "cubeShader.frag", "quadShader.vert", "quadShader.frag", "bursh.vert", "bursh.frag", "pressure.frag"], function (result) {
@@ -68,7 +69,7 @@
          var simulationRes = 512;
          var Density = 1.0;
          var deltaT = 1 / 120;
-         var epsilon = 1 / 2048;
+         var epsilon = 1 / 512;
          var divergenceShader = new Shader(simVertCode, divergenceFragCode);
          var pressureShader = new Shader(simVertCode, pressureFragCode);
          var advectShader = new Shader(simVertCode, advectFragCode);
@@ -77,24 +78,28 @@
 
          advectShader.setUniform("deltaT", "float", deltaT);
          advectShader.setUniform("epsilon", "float", epsilon);
+         advectShader.setUniform("XYFrames", "float", XYFrames);
          advectShader.setUniform("resolution","float", simulationRes);
 
          divergenceShader.use();
 
          divergenceShader.setUniform("deltaT", "float", deltaT);
          divergenceShader.setUniform("epsilon", "float", epsilon);
+         divergenceShader.setUniform("XYFrames", "float", XYFrames);
          divergenceShader.setUniform("resolution", "float", simulationRes);
 
          gradientSubShader.use();
 
          gradientSubShader.setUniform("deltaT", "float", deltaT);
          gradientSubShader.setUniform("epsilon", "float", epsilon);
+         gradientSubShader.setUniform("XYFrames", "float", XYFrames);
          gradientSubShader.setUniform("resolution", "float", simulationRes);
 
          pressureShader.use();
 
          pressureShader.setUniform("resolution", "float", simulationRes);
          pressureShader.setUniform("epsilon", "float", epsilon);
+         pressureShader.setUniform("XYFrames", "float", XYFrames);
 
          var simPointers = [Pointer("a_position", 2, 0)];
          var simVertices = [-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
@@ -109,8 +114,6 @@
          var color1Tex = new Texture().size(imageRes, imageRes);
          var divergenceTex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
          //var im = images["5841762-image.jpg"];
-
-        // velocity0Tex = new Texture().image(im);
          /*==========Defining and storing the geometry=======*/
          var boxVertices =
          [ // X, Y, Z           U, V
@@ -218,6 +221,7 @@
          var buffer = new ArrayBuffer(gl.TRIANGLES, 5, pointers, boxVertices, boxIndices);
          buffer.bind(shader);
          shader.use();
+         shader.setUniform("XYFrames", "float", XYFrames);
 
          var worldMatrix = new Float32Array(16);
          var viewMatrix = new Float32Array(16);
@@ -249,6 +253,8 @@
          var counter =0;
          burshShader.use();
          burshShader.sampler("pressure", burshTex);
+         burshShader.setUniform("XYFrames", "float", XYFrames);
+
          var tmp;
          var velocityTex = velocity1Tex;
          function simulation()
@@ -385,8 +391,8 @@
          }
          drawBursh(1);
          function drawBursh2(t) {
-             color0Tex.size(imageRes, imageRes);
-             color1Tex.size(imageRes, imageRes);
+             //color0Tex.size(imageRes, imageRes);
+             //color1Tex.size(imageRes, imageRes);
 
              gl.clearColor(0, 0, 0, 0);
              gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -416,7 +422,7 @@
          {
 
               counter++;
-              if (counter % 250 == 1)
+              if (counter % 100 == 1)
               {
                   drawBursh(1);
                   drawBursh2(0);
