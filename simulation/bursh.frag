@@ -3,9 +3,32 @@ varying vec2 vUv;
 uniform vec3 camVec;
 uniform vec3 cam;
 uniform float time;
+uniform float time2;
+
 uniform float distance;
 uniform sampler2D pressure;
+float hash(vec3 p)  // replace this by something better
+{
+    p  = fract( p*0.3183099+.1 );
+	p *= 17.0;
+    return fract( p.x*p.y*p.z*(p.x+p.y+p.z) );
+}
 
+float noise( in vec3 x )
+{
+    vec3 p = floor(x);
+    vec3 f = fract(x);
+    f = f*f*(3.0-2.0*f);
+	
+    return mix(mix(mix( hash(p+vec3(0,0,0)), 
+                        hash(p+vec3(1,0,0)),f.x),
+                   mix( hash(p+vec3(0,1,0)), 
+                        hash(p+vec3(1,1,0)),f.x),f.y),
+               mix(mix( hash(p+vec3(0,0,1)), 
+                        hash(p+vec3(1,0,1)),f.x),
+                   mix( hash(p+vec3(0,1,1)), 
+                        hash(p+vec3(1,1,1)),f.x),f.y),f.z);
+}
 vec4 sphere = vec4(0.0, 0.0, 0.0,1.);
 
 float Tile2Dto1D(float xsize, vec2 idx)
@@ -36,7 +59,9 @@ float sphIntersect( vec3 ro, vec3 rd, vec4 sph )
 void main(void) {
 float XYFrames = 8.;
 
+float rand = sin(time2)*2.-1.;
 	float angle =3.14/2.;
+	angle *=rand;
      float c = cos(angle);                         
      float s = sin(angle);                         
      mat2 rotation = mat2(c, s, -s, c); 
@@ -66,7 +91,7 @@ float XYFrames = 8.;
 			float theta = atan(y,x);
 x*=2.;
 y*=2.;
-	vec4 color1 = vec4(rotation*vec2(sin(theta),cos(theta))*2.,0.,1.);
+	vec4 color1 = vec4(rotation*vec2(sin(theta),cos(theta)),0.,1.);
 
 		vec4 color2 = vec4(     step(1.0, mod(floor((x + 1.0) / 0.2) + floor((y + 1.0) / 0.2), 2.0)),
     step(1.0, mod(floor((x + 1.0) / 0.2) + floor((y + 1.0) / 0.2), 2.0)),
