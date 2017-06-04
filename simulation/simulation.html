@@ -1,0 +1,468 @@
+<!doctype html>
+<html>
+<body>
+    <canvas width="1200" height="800" id="my_Canvas"></canvas>
+    <script src="shader.js"></script>
+    <script src="buffer.js"></script>
+    <script src="texture.js"></script>
+    <script src="framebuffer.js"></script>
+    <script src="gl-matrix.js"></script>
+    <script src="camera.js"></script>
+    <script src="utilities.js"></script>
+
+    <script>
+        var textLoaded = false;
+        var imagedLoaded = false;
+        var texts;
+        var images;
+        loadTextFiles(["fullscreen.vert", "advect.frag", "divergence.frag", "pressure.frag", "gradientSub.frag", "cubeShader.vert", "cubeShader.frag", "quadShader.vert", "quadShader.frag", "bursh.vert", "bursh.frag", "pressure.frag"], function (result) {
+            textLoaded = true;
+            texts = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+        loadImages(["5841762-image.jpg", "crackedmud1.jpg"], function (result) {
+            imagedLoaded = true;
+            images = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+
+        function onLoaded()
+        {
+
+         /*================Creating a canvas=================*/
+         var canvas = document.getElementById('my_Canvas');
+         gl = canvas.getContext('experimental-webgl');
+         gl.getExtension('OES_texture_float');
+         gl.getExtension('OES_texture_float_linear');
+         var camera = new Camera(canvas, [0, 0, 0]);
+         var mouseX;
+         var mouseY;
+         canvas.addEventListener('mousemove', function (event) {
+             var position = Utilities.getMousePosition(event, canvas);
+             var normalizedX = position.x / canvas.width;
+             var normalizedY = position.y / canvas.height;
+
+             mouseX = normalizedX * 2.0 - 1.0;
+
+             mouseY = (1.0 - normalizedY) * 2.0 - 1.0;
+             camera.onMouseMove(event);
+         });
+         canvas.addEventListener('mousedown', function (event) {
+             camera.onMouseDown(event);
+         });
+         document.addEventListener('mouseup', function (event) {
+             camera.onMouseUp(event);
+         });
+
+
+         var simVertCode = texts["fullscreen.vert"];
+         var advectFragCode = texts["advect.frag"];
+         var divergenceFragCode = texts["divergence.frag"];
+         var pressureFragCode = texts["pressure.frag"];
+         var gradientSubFragCode = texts["gradientSub.frag"];
+
+         var simulationRes = 512;
+         var Density = 1.0;
+         var deltaT = 1 / 120;
+         var epsilon = 1 / 2048;
+         var divergenceShader = new Shader(simVertCode, divergenceFragCode);
+         var pressureShader = new Shader(simVertCode, pressureFragCode);
+         var advectShader = new Shader(simVertCode, advectFragCode);
+         var gradientSubShader = new Shader(simVertCode, gradientSubFragCode);
+         advectShader.use();
+
+         advectShader.setUniform("deltaT", "float", deltaT);
+         advectShader.setUniform("epsilon", "float", epsilon);
+         advectShader.setUniform("resolution","float", simulationRes);
+
+         divergenceShader.use();
+
+         divergenceShader.setUniform("deltaT", "float", deltaT);
+         divergenceShader.setUniform("epsilon", "float", epsilon);
+         divergenceShader.setUniform("resolution", "float", simulationRes);
+
+         gradientSubShader.use();
+
+         gradientSubShader.setUniform("deltaT", "float", deltaT);
+         gradientSubShader.setUniform("epsilon", "float", epsilon);
+         gradientSubShader.setUniform("resolution", "float", simulationRes);
+
+         pressureShader.use();
+
+         pressureShader.setUniform("resolution", "float", simulationRes);
+         pressureShader.setUniform("epsilon", "float", epsilon);
+
+         var simPointers = [Pointer("a_position", 2, 0)];
+         var simVertices = [-1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0];
+
+         var simBuffer = new ArrayBuffer(gl.TRIANGLE_STRIP, 2, simPointers, simVertices);
+         var imageRes = 2048;
+         var velocity0Tex = new Texture().size(simulationRes, simulationRes,gl.FLOAT);
+         var velocity1Tex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
+         var pressure0Tex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
+         var pressure1Tex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
+         var color0Tex = new Texture().size(imageRes, imageRes);
+         var color1Tex = new Texture().size(imageRes, imageRes);
+         var divergenceTex = new Texture().size(simulationRes, simulationRes, gl.FLOAT);
+         //var im = images["5841762-image.jpg"];
+
+        // velocity0Tex = new Texture().image(im);
+         /*==========Defining and storing the geometry=======*/
+         var boxVertices =
+         [ // X, Y, Z           U, V
+             // Top
+             -1.0, 1.0, -1.0, 0, 0,
+             -1.0, 1.0, 1.0, 0, 1,
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, 1.0, -1.0, 1, 0,
+
+             // Left
+             -1.0, 1.0, 1.0, 0, 0,
+             -1.0, -1.0, 1.0, 1, 0,
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, 1.0, -1.0, 0, 1,
+
+             // Right
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, -1.0, 1.0, 0, 1,
+             1.0, -1.0, -1.0, 0, 0,
+             1.0, 1.0, -1.0, 1, 0,
+
+             // Front
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, -1.0, 1.0, 1, 0,
+             -1.0, -1.0, 1.0, 0, 0,
+             -1.0, 1.0, 1.0, 0, 1,
+
+             // Back
+             1.0, 1.0, -1.0, 0, 0,
+             1.0, -1.0, -1.0, 0, 1,
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, 1.0, -1.0, 1, 0,
+
+             // Bottom
+             -1.0, -1.0, -1.0, 1, 1,
+             -1.0, -1.0, 1.0, 1, 0,
+             1.0, -1.0, 1.0, 0, 0,
+             1.0, -1.0, -1.0, 0, 1,
+         ];
+
+         var boxIndices =
+         [
+             // Top
+             0, 1, 2,
+             0, 2, 3,
+
+             // Left
+             5, 4, 6,
+             6, 4, 7,
+
+             // Right
+             8, 9, 10,
+             8, 10, 11,
+
+             // Front
+             13, 12, 14,
+             15, 14, 12,
+
+             // Back
+             16, 17, 18,
+             16, 18, 19,
+
+             // Bottom
+             21, 20, 22,
+             22, 20, 23
+         ];
+
+         var quadvertices = [
+        -1, 1, 0,
+        -1, -1, 0,
+        1, -1, 0,
+        1, 1, 0
+         ];
+         var burshvertices = [
+             -1.0, 1.0, -1.0, 0, 0,
+             -1.0, 1.0, 1.0, 0, 1,
+             1.0, 1.0, 1.0, 1, 1,
+             1.0, 1.0, -1.0, 1, 0,
+         ];
+         var quadindices = [3, 2, 1, 3, 1, 0];
+         var burshIndices = [0, 1, 2,0, 2, 3,];
+
+         var quadpointers = [Pointer("coordinate", 3, 0)];
+         var burshpointers = [Pointer("coordinate", 3, 0), Pointer("uv", 2, 3)];
+
+         var quadbuffer = new ArrayBuffer(gl.TRIANGLES, 3, quadpointers, quadvertices, quadindices);
+         var burshBuffer = new ArrayBuffer(gl.TRIANGLES, 5, burshpointers, burshvertices, burshIndices);
+
+         var quadVertCode = texts["quadShader.vert"];
+         var quadFragCode = texts["quadShader.frag"];
+         var burshVertCode = texts["bursh.vert"];
+         var burshFragCode = texts["bursh.frag"];
+
+ 
+         var quadShader = new Shader(quadVertCode, quadFragCode);
+         var burshShader = new Shader(burshVertCode, burshFragCode);
+         var burshFrameBuffer = new FrameBuffer();
+         var burshTex = new Texture().size(2048, 2048);
+         burshFrameBuffer.bindTexture(velocity0Tex);
+
+         var vertCode = texts["cubeShader.vert"];
+         var fragCode = texts["cubeShader.frag"];
+         var shader = new Shader(vertCode, fragCode);
+         var pointers = [Pointer("coordinate", 3, 0), Pointer("uv", 2, 3)];
+         var buffer = new ArrayBuffer(gl.TRIANGLES, 5, pointers, boxVertices, boxIndices);
+         buffer.bind(shader);
+         shader.use();
+
+         var worldMatrix = new Float32Array(16);
+         var viewMatrix = new Float32Array(16);
+         var projMatrix = new Float32Array(16);
+         mat4.identity(worldMatrix);
+         mat4.perspective(projMatrix, glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 100.0);
+         shader.setUniform("mWorld", "mat4", worldMatrix);
+         shader.setUniform("mProj", "mat4", projMatrix);
+         shader.setUniform("screen", "vec2", [canvas.width,canvas.height]);
+         quadShader.use();
+         quadShader.setUniform("resolution", "vec2", [canvas.width, canvas.height]);
+         quadShader.setUniform("noise", "float", .04);
+         quadShader.setUniform("color", "vec3", [36. / 255., 70. / 255., 106. / 255.]);
+
+         var xRotationMatrix = new Float32Array(16);
+         var yRotationMatrix = new Float32Array(16);
+
+         //
+         // Main render loop
+        //
+         gl.enable(gl.DEPTH_TEST);
+         var identityMatrix = new Float32Array(16);
+         var mvpInverse = new Float32Array(16);
+         var mv = new Float32Array(16);
+         var mpv = new Float32Array(16);
+         mat4.identity(identityMatrix);
+         var angle = 23;
+         var time = 0.0;
+         var counter =0;
+         burshShader.use();
+         burshShader.sampler("pressure", burshTex);
+         var tmp;
+         var velocityTex = velocity1Tex;
+         function simulation()
+         {
+             // counter++;
+             //if (counter % 5 != 1) return;
+             //advect
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+             burshFrameBuffer.bindTexture(velocity1Tex);
+
+             burshFrameBuffer.bind();
+
+             advectShader.use();
+             advectShader.sampler("velocity", velocity0Tex);
+             advectShader.sampler("inputTexture", velocity0Tex);
+             simBuffer.bind(advectShader);
+             simBuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             unBindFrameBuffer();
+             tmp = velocity1Tex;
+             velocity1Tex = velocity0Tex;
+             velocity0Tex = tmp;
+
+             
+             //diverge
+             divergenceShader.use();
+             divergenceShader.sampler("velocity", velocity0Tex);
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+             burshFrameBuffer.bindTexture(divergenceTex);
+             burshFrameBuffer.bind();
+
+             simBuffer.bind(divergenceShader);
+
+             simBuffer.draw();
+
+             unBindFrameBuffer();
+
+
+             //pressure
+             
+             var JACOBI_ITERATIONS = 10;
+
+
+             for (var i = 0; i < JACOBI_ITERATIONS; i++) {
+ 
+                 pressureShader.use();
+                 pressureShader.sampler("divergence", divergenceTex);
+                 pressureShader.sampler("pressure", pressure0Tex);
+                 gl.clearColor(0, 0, 0, 0);
+                 gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                 burshFrameBuffer.bindTexture(pressure1Tex);
+
+                 burshFrameBuffer.bind();
+                 simBuffer.bind(pressureShader);
+                 simBuffer.draw();
+                 unBindFrameBuffer();
+
+                 tmp = pressure1Tex;
+                 pressure1Tex = pressure0Tex;
+                 pressure0Tex = tmp;
+             }
+
+
+             //Subtract
+             
+             gradientSubShader.use();
+             gradientSubShader.sampler("velocity", velocity0Tex);
+             gradientSubShader.sampler("pressure", pressure0Tex);
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+             burshFrameBuffer.bindTexture(velocity1Tex);
+             burshFrameBuffer.bind();
+             simBuffer.bind(gradientSubShader);
+
+             simBuffer.draw();
+
+             unBindFrameBuffer();
+
+             tmp = velocity1Tex;
+             velocity1Tex = velocity0Tex;
+             velocity0Tex = tmp;
+
+
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+             burshFrameBuffer.bindTexture(color1Tex);
+
+             burshFrameBuffer.bind();
+             
+             advectShader.use();
+             advectShader.sampler("velocity", velocity0Tex);
+             advectShader.sampler("inputTexture", color0Tex);
+             simBuffer.bind(advectShader);
+             simBuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             unBindFrameBuffer();
+             tmp = color1Tex;
+             color1Tex = color0Tex;
+             color0Tex = tmp;
+             
+         }
+         function drawBursh(t) {
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+             gl.viewport(0, 0, canvas.width, canvas.height);
+             burshFrameBuffer.bindTexture(velocity0Tex);
+
+             burshFrameBuffer.bind();
+             burshShader.use();
+             var fov = 2.0 * Math.atan(1.0 / projMatrix[5]);
+             burshShader.setUniform("camVec", "vec3", camera.getMouseRay(fov, mouseX, mouseY));
+             burshShader.setUniform("cam", "vec3", camera.getPosition());
+             burshShader.setUniform("distance", "float", camera.distance);
+
+             burshShader.setUniform("time", "float", t);
+
+             burshBuffer.bind(burshShader);
+             burshBuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             unBindFrameBuffer();
+             color0Tex.size(imageRes, imageRes);
+
+         }
+         drawBursh(1);
+         function drawBursh2(t) {
+             gl.clearColor(0, 0, 0, 0);
+             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+             gl.viewport(0, 0, canvas.width, canvas.height);
+             burshFrameBuffer.bindTexture(color0Tex);
+             burshFrameBuffer.bind();
+             burshShader.use();
+             var fov = 2.0 * Math.atan(1.0 / projMatrix[5]);
+             burshShader.setUniform("camVec", "vec3", camera.getMouseRay(fov, mouseX, mouseY));
+             burshShader.setUniform("cam", "vec3", camera.getPosition());
+             burshShader.setUniform("distance", "float", camera.distance);
+
+             burshShader.setUniform("time", "float", t);
+
+             burshBuffer.bind(burshShader);
+             burshBuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             unBindFrameBuffer();
+            // color1Tex.size(imageRes, imageRes);
+         }
+
+         drawBursh2(0);
+
+         var counter = 5;
+         var update = function()
+         {
+
+              counter++;
+              if (counter % 200 == 1)
+              {
+                  drawBursh(1);
+                  drawBursh2(0);
+
+                  requestAnimationFrame(function ()
+                  { update() });
+                  return;
+
+              }
+             gl.disable(gl.BLEND);
+             simulation();
+             
+             setupCanvas(canvas);
+
+             gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+             gl.disable(gl.BLEND);
+             quadShader.use();
+             quadbuffer.bind(quadShader);
+             quadbuffer.draw();
+             gl.clear(gl.DEPTH_BUFFER_BIT);
+
+             gl.enable(gl.BLEND);
+
+             time += 0.01666;
+             angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+             mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
+             mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
+             //mat4.mul(worldMatrix, yRotationMatrix, xRotationMatrix);
+             shader.use();
+
+             shader.setUniform("mWorld", "mat4", worldMatrix);
+             shader.setUniform("mView", "mat4", camera.getViewMatrix());
+             shader.setUniform("time", "float", time);
+             shader.setUniform("cam", "vec3", camera.getPosition());
+
+             mat4.mul(mv, camera.getViewMatrix(), worldMatrix);
+
+             mat4.mul(mpv, projMatrix, mv);
+             mat4.invert(mvpInverse, mpv);
+             shader.setUniform("mvpInverse", "mat4", mvpInverse);
+
+             shader.sampler("uSampler", color0Tex);
+
+             buffer.bind(shader);
+             buffer.draw();
+             
+             
+
+             requestAnimationFrame(function ()
+             { update()});
+         }
+         update();
+        }
+    </script>
+</body>
+</html>
