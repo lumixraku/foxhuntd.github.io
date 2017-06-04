@@ -34,6 +34,15 @@ float noise( in vec3 x )
 }
 vec4 sphere = vec4(0.0, 0.0, 0.0,1.);
 
+vec2 Tile1Dto2D(float xsize, float idx)
+{
+	vec2 xyidx = vec2(0.0);
+	xyidx.y = floor(idx / xsize);
+	xyidx.x = idx - xsize * xyidx.y;
+
+	return xyidx;
+}
+
 float Tile2Dto1D(float xsize, vec2 idx)
 {
 	return idx.x* xsize+idx.y;
@@ -59,24 +68,40 @@ float sphIntersect( vec3 ro, vec3 rd, vec4 sph )
     return -b - h;
 }
 
+vec4 PseudoVolumeTexture(sampler2D sampler, vec3 inPos, float xsize, float numframes)
+{
+	float zframe = ceil(inPos.z * numframes);
+	float zphase = fract(inPos.z * numframes);
+
+	vec2 uv = fract(inPos.xy) / xsize;
+
+	vec2 curframe = Tile1Dto2D(xsize, zframe) / xsize;
+	vec2 nextframe = Tile1Dto2D(xsize, zframe + 1.) / xsize;
+
+	vec4 sampleA = texture2D(sampler, uv + curframe);
+	vec4 sampleB = texture2D(sampler, uv + nextframe);
+	return mix(sampleA, sampleB, zphase);
+}
+
+
 void main(void) {
 
 float rand = sin(time2)*2.-1.;
-	float angle =3.14/2.;
+ mat2 rotation90 = mat2(0, -1, 1, 0); 
+	float angle =-3.14/2.;
 	angle *=rand;
      float c = cos(angle);                         
      float s = sin(angle);                         
      mat2 rotation = mat2(c, s, -s, c); 
 	vec2 uv = vUv;
-	texture2D(pressure, uv).x; 
 
 	vec3 ro = cam;
 	vec3 rd = camVec;
 	float t = (sin(time*0.4)-0.5)*1.;
 	vec3 p = ro+rd*distance;
-	p = vec3(0.);
+	p = vec3(0.,0.,0.);
 	vec3 volumeCoordinate=  encodeVolumeCoordinates(uv,XYFrames);
-
+	float numFrames= XYFrames*XYFrames;
 	volumeCoordinate = (volumeCoordinate-0.5)*2.;
 	vec3 direction = normalize(p-volumeCoordinate);
 	float distance  =  length(p-volumeCoordinate);
@@ -98,7 +123,9 @@ y*=2.;
 		vec4 color2 = vec4(     step(1.0, mod(floor((x + 1.0) / 0.2) + floor((y + 1.0) / 0.2), 2.0)),
     step(1.0, mod(floor((x + 1.0) / 0.2) + floor((y + 1.0) / 0.2), 2.0)),
     step(1.0, mod(floor((x + 1.0) / 0.2) + floor((y + 1.0) / 0.2), 2.0)),1.)*distance;
-	//color1 = texture2D(curl, vUv);
+	vec4 color3 = vec4(pow(texture2D(curl, rotation90*volumeCoordinate.xy*1.+vec2(0.5,0.5)).r,2.)*3.)*distance;
+	float ratio = ceil(sin(time2)-0.6);
+	color2 = (1.-ratio)*color3+ ratio*color2;
 	//color2 = vec4(distance);
 	gl_FragColor = time*color1 + (1.-time)*color2;
 
