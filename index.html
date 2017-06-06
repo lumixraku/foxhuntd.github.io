@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>tang.shengchao</title>
+
+        <style>
+            * {
+                font-family: Helvetica, Arial, sans-serif;
+                color: #555555;
+            }
+
+            body {
+                padding: 40px 60px;
+            }
+
+            #name {
+                font-weight: bold;
+                font-size: 20px;
+            }
+
+            #dot {
+                color: rgb(191,48,48);
+                font-size: 26px;
+            }
+
+            #projects {
+                margin-top: 40px;
+            }
+
+            .project {
+                float: left;
+                margin-right: 20px;
+                margin-bottom: 20px;
+            }
+
+            .project img {
+                width: 400px;
+                height: 235px;
+            }
+
+            .title {
+                margin-top: 5px;
+                font-size: 12px;
+            }
+
+            .title a {
+                text-decoration: none;
+            }
+
+            #contact {
+                margin-top: 20px;
+                font-size: 12px;
+                line-height: 20px;
+            }
+
+            #contact a {
+                font-weight: normal;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="name">Tang<span id="dot">.</span>Shengchao</div>
+
+        <div id="projects">
+
+
+            <div class="project">
+                <div><a href="http://foxhuntd.github.io/simulation/simulation.html"><img src="bunny.gif"/></a></div>
+                <div class='title'><a href="http://foxhuntd.github.io/simulation/simulation.html">Volumetric Fluid Simulation</a></div>
+            </div>
+            <div class="project">
+                <div><a href="https://foxhuntd.github.io/raymarchCube.html"><img src="fireball.gif" /></a></div>
+                <div class='title'><a href="https://foxhuntd.github.io/raymarchCube.html">Curl Noise Fireball</a></div>
+            </div>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div id="contact">
+            Email: <a href="tang.shengchao@hotmail.com">tang.shengchao@hotmail.com</a> | 知乎专栏: <a href="https://zhuanlan.zhihu.com/c_37032701">Math Eye Candy</a> 
+        </div>
+
+        <script>
+            function hsvToRGB (h, s, v) {
+                h = h % 1;
+
+                var c = v * s,
+                    hDash = h * 6;
+
+                var x = c * (1 - Math.abs(hDash % 2 - 1));
+
+                var mod = Math.floor(hDash);
+
+                var r = [c, x, 0, 0, x, c][mod],
+                    g = [x, c, c, x, 0, 0][mod],
+                    b = [0, 0, x, c, c, x][mod];
+
+                var m = v - c;
+
+                r += m;
+                g += m;
+                b += m;
+
+                return [r, g, b];
+            };
+
+            function rgbToString (color) {
+                return 'rgb(' + (color[0] * 255).toFixed(0) + ',' + (color[1] * 255).toFixed(0) + ',' + (color[2] * 255).toFixed(0) + ')';
+            };
+
+            document.getElementById('dot').style.color = rgbToString(hsvToRGB(Math.random(), 0.75, 1));
+        </script>
+    </body>
+</html>
