@@ -51,7 +51,7 @@ marmoset = {};
         var i = 1;
         for (;;) {
             var n = i + (i >> 1);
-           //Á¬ĞøÁ½¸öÊı×Ö£¬È»ºó¿ÕÒ»¸ö
+           //è¿ç»­ä¸¤ä¸ªæ•°å­—ï¼Œç„¶åç©ºä¸€ä¸ª
             if (n + 1 >= input.length) break;
             var m = input[n + 1],
                 n = input[n],
@@ -62,7 +62,7 @@ marmoset = {};
             var q;
             var lastCount = counter;
             var flag;
-            //Èç¹ûp< 256¿ÉÒÔÖ±½ÓÌîĞ´
+            //å¦‚æœp< 256å¯ä»¥ç›´æ¥å¡«å†™
             if (p < 256) {
                 flag = 1;
                 result[counter++] = p;
@@ -1174,7 +1174,7 @@ marmoset = {};
         glContext.uniform1f(params.uHorizonSmoothing, this.horizonSmoothing);
         glContext.uniform4fv(params.uDiffuseCoefficients, sky.diffuseCoefficients);
 
-        //¹â
+        //å…‰
         if(0 < lights.count) { 
             glContext.uniform4fv(params.uLightPositions, lights.positionBuffer);
             glContext.uniform3fv(params.uLightDirections, lights.directionBuffer);
@@ -1185,7 +1185,7 @@ marmoset = {};
             glContext.uniform2f(params.uShadowKernelRotation, 0.5 * Math.cos(kernelAngle), 0.5 * Math.sin(kernelAngle));
         }
 
-        //ÒõÓ°ÌùÍ¼
+        //é˜´å½±è´´å›¾
         if (0 < lights.shadowCount) {
             var width = shadow.depthTextures[0].desc.width,
                 height = shadow.depthTextures[0].desc.height;
@@ -1680,9 +1680,9 @@ marmoset = {};
     function MeshRenderable(mesh, renderable, material) {
         this.mesh = mesh;
         this.gl = this.mesh.gl;
-        //×ÓmeshµÄindexÆ«ÒÆÖµ
+        //å­meshçš„indexåç§»å€¼
         this.indexOffset = renderable.firstIndex * mesh.indexTypeSize;
-        //×ÓmeshµÄindex´óĞ¡
+        //å­meshçš„indexå¤§å°
         this.indexCount = renderable.indexCount;
         this.wireIndexOffset = renderable.firstWireIndex * mesh.indexTypeSize;
         this.wireIndexCount = renderable.wireIndexCount;
@@ -1751,7 +1751,7 @@ marmoset = {};
         }
     };
 
-    //Ê¹ÓÃshadowµÄsolidshader 
+    //ä½¿ç”¨shadowçš„solidshader 
     MeshRenderable.prototype.drawShadow = function (vPos) {
         var glContext = this.gl;
         if (this.mesh.desc.cullBackFaces) {
@@ -1768,7 +1768,7 @@ marmoset = {};
         glContext.disableVertexAttribArray(vPos);
     };
 
-    //Ê¹ÓÃshadowµÄalpha shader 
+    //ä½¿ç”¨shadowçš„alpha shader 
     MeshRenderable.prototype.drawAlphaShadow = function (vPos, vUv) {
         var glContext = this.gl;
         if (this.mesh.desc.cullBackFaces) {
@@ -2143,7 +2143,7 @@ marmoset = {};
             glContext.uniform2fv(g.uGrainScaleBias, h.grainScaleBias);
 
             if (this.aaResolve) {
-                //ËÄ¸ösampleBufferÂÖÁ÷Ğ´Èë
+                //å››ä¸ªsampleBufferè½®æµå†™å…¥
                 this.sampleFramebuffers[this.sampleIndex].bind();
                 this.fillScreen(e.attribs.vCoord);
                 this.samplesValid[this.sampleIndex] = 1;
@@ -2258,13 +2258,13 @@ marmoset = {};
         }
 
         this.metaData = sceneJson.metaData;
-        //ÊÓ³¡
+        //è§†åœº
         this.view = new View(sceneJson.mainCamera.view);
-        //Ìì¿ÕÇò ĞèÒªÎÄ¼ş
+        //å¤©ç©ºçƒ éœ€è¦æ–‡ä»¶
         this.sky = new Sky(this.gl, archive, sceneJson.sky);
-        //¹â
+        //å…‰
         this.lights = new Lights(sceneJson.lights, this.view);
-        //²ÄÖÊ ĞèÒªÎÄ¼ş
+        //æè´¨ éœ€è¦æ–‡ä»¶
         this.materials = {};
         for (var i = 0; i < sceneJson.materials.length; ++i) {
             var material = sceneJson.materials[i];
@@ -2272,7 +2272,7 @@ marmoset = {};
             material.shadowCount = this.lights.shadowCount;
             this.materials[material.name] = new Material(this.gl, archive, material);
         }
-        //Ä£ĞÍ ĞèÒªÎÄ¼ş
+        //æ¨¡å‹ éœ€è¦æ–‡ä»¶
         if (sceneJson.meshes) {
             for (var i = 0; i < sceneJson.meshes.length; ++i) {
                 var mesh = sceneJson.meshes[i];
@@ -2553,7 +2553,7 @@ marmoset = {};
     //shaderSolid
     //shaderAlphaTest
     //depthTargets framebuffer
-    //depthTextures °ó¶¨ÔÚframebufferÉÏ
+    //depthTextures ç»‘å®šåœ¨framebufferä¸Š
     //lights.shadowCounts
     function ShadowCollector(glContext, shadowCounts) {
         this.gl = glContext;
@@ -2590,7 +2590,7 @@ marmoset = {};
         marmoset.depthTextures = this.depthTextures;
     }
 
-    //½«shadowÌùÍ¼°ó¶¨µ½Ö¸¶¨Î»ÖÃ
+    //å°†shadowè´´å›¾ç»‘å®šåˆ°æŒ‡å®šä½ç½®
     ShadowCollector.prototype.bindDepthTexture = function (depthTexLocation, count) {
         if (this.shadowCount > count) {
             this.depthTextures[count].bind(depthTexLocation);
@@ -2617,7 +2617,7 @@ marmoset = {};
                 needUpdate = true;
                 Matrix.mul(lightProjection, modelViewBuffer.subarray(16 * i, 16 * (i + 1)), lightMatrix);
                 Matrix.mul(lightProjection, projectionBuffer.subarray(16 * i, 16 * (i + 1)), lightProjection);
-                //°ó¶¨framebuffer
+                //ç»‘å®šframebuffer
                 this.depthTargets[i].bind();
                 glContext.clearColor(1, 1, 1, 1);
                 glContext.clear(glContext.COLOR_BUFFER_BIT | glContext.DEPTH_BUFFER_BIT);
@@ -2673,9 +2673,9 @@ marmoset = {};
 
         var skyData = archieve.extract("sky.dat") || archieve.extract("sky.png");
 
-        //ÔØÈëÌì¿ÕÌùÍ¼
+        //è½½å…¥å¤©ç©ºè´´å›¾
         if (undefined !== skyData) {
-            //1*8µÄÌùÍ¼
+            //1*8çš„è´´å›¾
             this.specularTexture = new Texture(glContext, {
                 width: 256,
                 height: 2048,
@@ -2700,7 +2700,7 @@ marmoset = {};
         this.backgroundBrightness = sky.backgroundBrightness || 1;
         this.backgroundColor = new Float32Array(sky.backgroundColor);
 
-        //Ìì¿ÕÇò ´øuv
+        //å¤©ç©ºçƒ å¸¦uv
         var c = 1 / 256, b = 0.5 / 256, d = 2.8 * b, e = 0.5 * b;
         var vertices = new Float32Array([0, 1, 0, 0.49609375 + c, 0.49609375 + c, 1, 0, 0, 0.9921875 + c, 0.49609375 + c, 0, 0, 1, 0.49609375 + c, 0.9921875 + c, -1, 0, 0, 0 + c, 0.49609375 + c, 0, 0, -1, 0.49609375 + c, 0 + c, 0, -1, 0, 0.9921875 +
             c, 0 + c, 0, -1, 0, 0.9921875 + c, 0.9921875 + c, 0, -1, 0, 0 + c, 0.9921875 + c, 0, -1, 0, 0 + c, 0 + c, d, 1 - d, -d, 0.5 + b, 0.5 - b, d, 1 - d, d, 0.5 + b, 0.5 + b, -d, 1 - d, d, 0.5 - b, 0.5 + b, -d, 1 - d, -d, 0.5 - b, 0.5 - b, -d, 0, -1 + d, 0.5 - b, 0 + c + b, d, 0, -1 + d, 0.5 + b, 0 + c + b, 1 - d, 0, -d, 0.9921875 + c - b, 0.5 - b, 1 - d, 0, d, 0.9921875 + c - b, 0.5 + b, d, 0, 1 - d, 0.5 + b, 0.9921875 + c - b, -d, 0, 1 - d, 0.5 - b, 0.9921875 + c - b, -1 + d, 0, d, 0 + c + b, 0.5 + b, -1 + d, 0, -d, 0 + c + b, 0.5 - b, 1, 0, 0, 0.9921875 + c - e, 0.49609375 + c, 0, 0, 1, 0.49609375 + c, 0.9921875 + c - e, -1, 0, 0, 0 + c + e, 0.49609375 + c, 0, 0, -1, 0.49609375 + c, 0 + c + e, 0, 1, 0, 0.49609375 + c - e, 0.49609375 +
@@ -2731,7 +2731,7 @@ marmoset = {};
                 this.backgroundCoefficients[i] *= this.backgroundBrightness;
             }
         } else {
-            //Ìì¿ÕÇòÌùÍ¼
+            //å¤©ç©ºçƒè´´å›¾
             this.backgroundTexture = new Texture(glContext, {
                 width: 256,
                 height: 256,
@@ -2761,7 +2761,7 @@ marmoset = {};
             }
             frameBuffer.bind();
             //render specularTexture to backgroundTexture
-            //Ìì¿ÕÌùÍ¼»­µ½backgroundTexture
+            //å¤©ç©ºè´´å›¾ç”»åˆ°backgroundTexture
             var shader = new Shader(glContext);
             shader.build("precision highp float; varying vec2 uv; attribute vec4 pos; void main(){ gl_Position=pos; uv=vec2(0.5,0.5/8.0)*pos.xy+vec2(0.5,6.5/8.0); }",
                 "precision highp float; varying vec2 uv; uniform sampler2D tex; uniform float brightness; void main(){vec4 col=texture2D(tex,uv); gl_FragColor.xyz=col.xyz*(brightness*col.w);}");
@@ -2795,12 +2795,12 @@ marmoset = {};
         }
         if (this.complete()) {
             var glContext = this.gl;
-            //Ê¹ÓÃsky.frag»òÕßskysh.frag
+            //ä½¿ç”¨sky.fragæˆ–è€…skysh.frag
             var bgShader = this.backgroundShader;
             bgShader.bind();
-            //ÊÀ½ç¾ØÕó
+            //ä¸–ç•ŒçŸ©é˜µ
             glContext.uniformMatrix4fv(bgShader.params.uInverseSkyMatrix, false, scene.lights.invMatrix);
-            //view ¾ØÕó
+            //view çŸ©é˜µ
             glContext.uniformMatrix4fv(bgShader.params.uViewProjection, false, scene.view.viewProjectionMatrix);
             //using sh
             if(3 == this.backgroundMode){
@@ -2810,7 +2810,7 @@ marmoset = {};
             }
             var alpha = 0.07 + 0.94 * (1 - scene.stripData.activeFade());
             glContext.uniform1f(bgShader.params.uAlpha, alpha);
-            //Ê¹ÓÃÌì¿ÕÇòµÄ¶¥µã
+            //ä½¿ç”¨å¤©ç©ºçƒçš„é¡¶ç‚¹
             glContext.bindBuffer(glContext.ARRAY_BUFFER, this.vertexBuffer);
             glContext.enableVertexAttribArray(bgShader.attribs.vPosition);
             glContext.vertexAttribPointer(bgShader.attribs.vPosition, 3, glContext.FLOAT, false, 20, 0);
@@ -3152,7 +3152,7 @@ marmoset = {};
     };
 
     UI.prototype.bindInput = function (input) {
-        //µ¥»÷
+        //å•å‡»
         input.onSingleTap.push(function (b, c) {
             if(this.stripData.selectedStrip != this.stripData.STRIP_NONE){
                 b = 2 / input.element.clientWidth * b - 1;
@@ -3166,7 +3166,7 @@ marmoset = {};
             }
         }.bind(this));
 
-        //Ë«»÷
+        //åŒå‡»
         input.onDoubleTap.push(function (a, c) {
             this.viewer.scene.view.reset();
             this.viewer.wake();
@@ -3200,11 +3200,11 @@ marmoset = {};
         gradient.addColorStop(1, "rgb(150,150,150)");
         canvas.fillStyle = gradient;
         canvas.fillRect(0, 0, this.thumbnail.width, this.thumbnail.height);
-        //°´Å¥
+        //æŒ‰é’®
         //this.container.appendChild(this.thumbnail);
         this.playButton = document.createElement("input");
         this.playButton.type = "image";
-        this.playButton.src = marmoset.dataLocale + "play.png";
+        //this.playButton.src = marmoset.dataLocale + "play.png";
         this.playButton.style.position = "absolute";
         this.playButton.style.left = "50%";
         this.playButton.style.top = "50%";
@@ -3334,7 +3334,7 @@ marmoset = {};
             this.sigCluster.style.left = "0px";
             this.sigCluster.style.top = "6px";
             this.sigCluster.style.height = marmoset.largeUI ? "64px" : "32px";
-            //ºïÍ·
+            //çŒ´å¤´
             this.logo = document.createElement("div");
             this.logo.style.position = "absolute";
             this.logo.style.right = marmoset.largeUI ? "-4px" : "1px";
@@ -3387,7 +3387,7 @@ marmoset = {};
                 }
 
                 var notHasTitleAndSub = !hasTitle && !hasSubtitle;
-                //ÊúÏß
+                //ç«–çº¿
                 var line = document.createElement("div");
                 line.style.position = "absolute";
                 line.style.right = marmoset.largeUI ? "74px" : "46px";
@@ -3483,7 +3483,7 @@ marmoset = {};
             }.bind(this.sigCluster);
             this.sigCluster.toggle();
 
-            //²»ÏÔÊ¾logo
+            //ä¸æ˜¾ç¤ºlogo
             //this.sigCluster.removeChild(this.logo);
            
             this.helpOverlay = document.createElement("div");
@@ -3512,7 +3512,7 @@ marmoset = {};
             helpContent.style.height = f + "px";
             this.helpOverlay.contents.appendChild(helpContent);
 
-            //Ô²½Ç ·½¿é
+            //åœ†è§’ æ–¹å—
             var border;
             border = document.createElement("div");
             border.style.position = "absolute";
@@ -3520,7 +3520,7 @@ marmoset = {};
             border.style.height = "100%";
             border.style.backgroundColor = "black";
             border.style.opacity = "0.65";
-            //Ô²½Ç
+            //åœ†è§’
             border.style.borderRadius = "16px";
             helpContent.appendChild(border);
 
@@ -3563,34 +3563,34 @@ marmoset = {};
             var suffix = (this.viewer.mobile ? "M" : "PC") + (2 < logoSize ? 4 : 2) + "x.png";
 
             var helpImg;
-            //Ğı×ª
+            //æ—‹è½¬
             helpImg = document.createElement("img");
             helpImg.src = marmoset.dataLocale + "helprotate" + suffix;
             helpImg.style.width = "66px";
             helpImg.style.height = "90px";
             center.appendChild(helpImg);
-            //Ëõ·Å
+            //ç¼©æ”¾
             helpImg = document.createElement("img");
             helpImg.src = marmoset.dataLocale + "helpzoom" + suffix;
             helpImg.style.width = "66px";
             helpImg.style.height = "90px";
             center.appendChild(helpImg);
 
-            //ÒÆ¶¯
+            //ç§»åŠ¨
             helpImg = document.createElement("img");
             helpImg.src = marmoset.dataLocale + "helpmove" + suffix;
             helpImg.style.width = "66px";
             helpImg.style.height = "90px";
             center.appendChild(helpImg);
 
-            //Ë«»÷¹éÎ»
+            //åŒå‡»å½’ä½
             helpImg = document.createElement("img");
             helpImg.src = marmoset.dataLocale + "helpreset" + suffix;
             helpImg.style.width = "66px";
             helpImg.style.height = "90px";
             center.appendChild(helpImg);
 
-            //shiftÒÆ¶¯
+            //shiftç§»åŠ¨
 
             helpImg = document.createElement("img");
             helpImg.src = marmoset.dataLocale + "helplights" + suffix;
@@ -3657,7 +3657,7 @@ marmoset = {};
             d.style.fontFamily = "Arial";
             space.appendChild(d);
 
-            //ÍøÖ·
+            //ç½‘å€
             var webAddress;
             webAddress = document.createElement("a");
             webAddress.style.color = "#FF0044";
@@ -3687,7 +3687,7 @@ marmoset = {};
                 this.active = !this.active;
             }.bind(this.helpOverlay, this.viewer);
 
-            //²Ëµ¥ ×î´ó»¯ °ïÖú µÈ
+            //èœå• æœ€å¤§åŒ– å¸®åŠ© ç­‰
             this.menuCluster = document.createElement("div");
             this.menuCluster.style.position = "absolute";
             this.menuCluster.style.right = marmoset.largeUI ? "4px" : "8px";
@@ -3747,7 +3747,7 @@ marmoset = {};
             };
             var buttonCounter = 0;
             var button;
-            //È«ÆÁÄ» °´Å¥
+            //å…¨å±å¹• æŒ‰é’®
             button = createButton(this.menuCluster.contents, "Full Screen", "fullscreen" + logoSize + "x.png", buttonCounter++, c);
             button.onclick = function (button) {
                 if(FullScreen.active()){
@@ -3759,7 +3759,7 @@ marmoset = {};
                 this.refreshUI();
             }.bind(this, button);
 
-            //È«ÆÁÄ» ·Ö²ã
+            //å…¨å±å¹• åˆ†å±‚
             button = createButton(this.menuCluster.contents, "Layer Views", "strips" + logoSize + "x.png", buttonCounter++, c);
 
             button.onclick = function (button) {
@@ -3771,7 +3771,7 @@ marmoset = {};
                 this.refreshUI()
             }.bind(this, button);
 
-            //È«ÆÁÄ» °ïÖú
+            //å…¨å±å¹• å¸®åŠ©
 
             button = createButton(this.menuCluster.contents, "Help", "help" + logoSize + "x.png", buttonCounter++, c);
 
@@ -3783,7 +3783,7 @@ marmoset = {};
                 this.refreshUI();
             }.bind(this, button);
 
-            //²Ëµ¥
+            //èœå•
             //this.container.appendChild(this.menuCluster);
             this.menuCluster.active = true;
 
@@ -4303,7 +4303,7 @@ marmoset = {};
     WebViewer.prototype.initGL = function () {
         var config = {
             alpha: !!marmoset.transparentBackground,
-            //Ö§³Ödepth !!
+            //æ”¯æŒdepth !!
             depth: false,
             stencil: false,
             antialias: false,
@@ -4545,7 +4545,7 @@ marmoset = {};
         this.wake();
     };
     
-    //loading ¸üĞÂ½ø¶ÈÌõ
+    //loading æ›´æ–°è¿›åº¦æ¡
     WebViewer.prototype.updateLoad = function () {
         if(this.scene.complete()){
             this.start();
@@ -4580,7 +4580,7 @@ marmoset = {};
             }
                 this.scene.view.size = [this.mainBuffer.width, this.mainBuffer.height];
                 this.scene.view.updateProjection();
-                // supersamplingÆ½ÒÆ
+                // supersamplingå¹³ç§»
                 this.scene.postRender.adjustProjectionForSupersampling(this.scene.view);
                 this.scene.collectShadows(this.mainBuffer);
                 this.mainBuffer.bind();
