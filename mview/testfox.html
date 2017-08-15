@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<meta name="viewport" content="user-scalable=0"/>
+<html>
+<head>
+    <title></title>
+    <script src="marmoset.js"></script>
+    <script src="utilities.js"></script>
+</head>
+<body>
+    <script>
+        var textLoaded = false;
+        var imagedLoaded = false;
+        var texts;
+        var images;
+        loadTextFiles(["cubeShader.vert", "cubeShader.frag", "post.frag"], function (result) {
+            textLoaded = true;
+            texts = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+        loadImages(["5841762-image.jpg"], function (result) {
+            imagedLoaded = true;
+            images = result;
+            if (textLoaded && imagedLoaded) {
+                onLoaded();
+            }
+        });
+
+        function onLoaded() {
+            marmoset.texts = texts;
+            marmoset.images = images;
+            marmoset.embed('lens.mview', { width: 800, height: 600, autoStart: true, fullFrame: true, pagePreset: false });
+        }
+    </script>
+</body>
+</html>
