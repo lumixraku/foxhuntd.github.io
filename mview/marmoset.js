@@ -4271,7 +4271,8 @@ marmoset = {};
 
     //decoded
     function WebViewer(width, height, sceneURL, haveThumbnail) {
-        this.mobile = /Android|iPhone|iPod|iPad|Windows Phone|IEMobile|BlackBerry|webOS/.test(navigator.userAgent);
+        //this.mobile = /Android|iPhone|iPod|iPad|Windows Phone|IEMobile|BlackBerry|webOS/.test(navigator.userAgent);
+        this.mobile = false;
         this.domRoot = document.createElement("div");
         this.domRoot.style.width = width + "px";
         this.domRoot.style.height = height + "px";
