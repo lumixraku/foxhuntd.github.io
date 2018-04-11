@@ -1,0 +1,3 @@
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns1="http://www.sgcc.com.cn/sggis/service/gisservice"><soap:Body><ns1:getConnectionResponse><ns1:out>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;gt:GetConnectionOutput xmlns:gt="http://www.sgcc.com.cn/sggis/service/schema"&gt;&lt;gt:Token&gt;F49uutF+jniDvmkE9J3dod4uh9BmVkivNngjljHB14xtsQ+d20kpfgEZO9YB4dmBCUZo3XH9br5Z1mMuUMvaxAoWPhfsEHTzDvQb8heXZKff+lCpvqCztd4JIjs53ih4CrKA5poIw/6M9mDIt0WnyVIaWVcRPxEp3mExvM9uMus=&lt;/gt:Token&gt;&lt;gt:Expires&gt;31536000000&lt;/gt:Expires&gt;&lt;/gt:GetConnectionOutput&gt;
+</ns1:out></ns1:getConnectionResponse></soap:Body></soap:Envelope>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Quick Start - sggis</title>
+
+
+<script src="jquery.min.js"></script>
+
+	
+</head>
+<body>
+
+
+
+<script>
+
+		var testResultStr = "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:ns1=\"http://www.sgcc.com.cn/sggis/service/gisservice\"><soap:Body><ns1:getConnectionResponse><ns1:out>&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;"+
+"&lt;gt:GetConnectionOutput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\"&gt;&lt;gt:Token&gt;F49uutF+jniDvmkE9J3dod4uh9BmVkivNngjljHB14xtsQ+d20kpfgEZO9YB4dmBCUZo3XH9br5Z1mMuUMvaxAoWPhfsEHTzDvQb8heXZKff+lCpvqCztd4JIjs53ih4CrKA5poIw/6M9mDIt0WnyVIaWVcRPxEp3mExvM9uMus=&lt;/gt:Token&gt;&lt;gt:Expires&gt;31536000000&lt;/gt:Expires&gt;&lt;/gt:GetConnectionOutput&gt;"+
+"</ns1:out></ns1:getConnectionResponse></soap:Body></soap:Envelope>";
+	
+	var soapHeaders = ["SOAPAction", " ", "Content-Type", "text/xml; charset=utf-8"];
+	
+	function encodeSoap(body){
+		var result = //'<?xml version="1.0" encoding="utf-8"?>' +
+        '<SOAP-ENV:Envelope' +
+        ' xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"' +
+        ' xmlns:xsd="http://www.w3.org/2001/XMLSchema"' +
+        ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+        '<SOAP-ENV:Body>' +
+		body+
+        '</SOAP-ENV:Body>' +
+        '</SOAP-ENV:Envelope>';
+
+		return  result;
+	}
+	
+	function parseResponseAsXml(response){
+		//var xmlDoc = $.parseXML( response ),
+		//$xml = $( xmlDoc ),
+		var $out = response.find( "ns1\\:out" );
+		var $xmlDoc = $.parseXML( $out.text() );
+		var $xml = $( $xmlDoc );
+		return $xml;
+	}
+	
+		
+	function parseResponseAsStr(response){
+		//ar xmlDoc = $.parseXML( response ),
+		//$xml = $( xmlDoc ),
+		//$out = $xml.find( "ns1\\:out" );
+		return $response.find( "ns1\\:out" ).text();
+	}
+	
+	//BaseService GetConnection
+	function encodeGetConnectionBody(userName,password,appKey,identifier) 
+	{
+		var result = "";
+		if (identifier == "")
+		{
+			result = "<gt:GetConnectionInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t\t\t\t\t\t\t\t" + ("<gt:UserName>" + userName + "</gt:UserName>") + "\r\n\t\t\t\t\t\t\t\t\t\t\t\t" + ("<gt:Password>" + password + "</gt:Password>") + "\r\n\t\t\t\t\t\t\t\t\t\t\t\t" + ("<gt:AppKey>" + appKey + "</gt:AppKey>") + "\r\n\t\t\t\t\t\t\t\t\t\t\t  </gt:GetConnectionInput>";
+		}
+		else
+		{
+			result = "<gt:GetConnectionInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t\t\t" + ("<gt:UserName>" + userName + "</gt:UserName>") + "\r\n\t\t\t\t\t\t\t" + ("<gt:Identifier>" + identifier + "</gt:Identifier>") + "\r\n\t\t\t\t\t\t\t" + ("<gt:Password>" + password + "</gt:Password>") + "\r\n\t\t\t\t\t\t  </gt:GetConnectionInput>";
+		}
+		var cdata = "<![CDATA[" + result + "]]>";
+		result = "<gis:getConnection xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:getConnection>";
+		return result;
+	}
+	
+	function decodeGetConnectionResponse(response){
+		var result = {"token":"","expires":""};
+		var $xml= parseResponseAsXml(response);
+		
+		result["token"] = $xml.find( "gt\\:Token" ).text();
+		result["expires"] = $xml.find( "gt\\:Expires" ).text();
+		return result;
+	}
+	
+	//SgtfService
+	function encodeQueryObject(token,verify,command)
+	{
+		var result = "<gt:QueryObjectInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">" + ("<gt:Token>" + token + "</gt:Token>") + ("<gt:Verify>" + verify + "</gt:Verify>") + ("<gt:Command>" + command + "</gt:Command>") + "</gt:QueryObjectInput>";
+		var cdata = "<![CDATA[" + result+ "]]>";
+		result = "<gis:queryObject xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:queryObject>";
+		return result;
+	}
+	
+	function decodeQueryObject(response)
+	{
+		var result = parseResponseAsStr(response);
+		
+		//result["token"] = $xml.find( "gt\\:Token" ).text();
+		//result["expires"] = $xml.find( "gt\\:Expires" ).text();
+		return result;
+	}
+	
+	//QueryService
+	function encodeQueryDepExtent(token,deptID)
+	{
+		var result = "<gt:QueryDepExtentInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t" + ("<gt:Token>" + token + "</gt:Token>") + "\r\n\t\t\t\t\t" + ("<gt:DeptId>" + deptID + "</gt:DeptId>") + "\r\n\t\t\t\t</gt:QueryDepExtentInput>";
+		var cdata = "<![CDATA[" + result + "]]>";
+		result = "<gis:queryDepExtent xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:queryDepExtent>";
+		return result;
+	}
+	
+	function decodeQueryDepExtent(response)
+	{
+		var result = {"xmin":"","ymin":"","xmax":"","ymax":""};
+		$xml = parseResponseAsXml(response);
+		
+		result["xmin"] = $xml.find( "gml\\:lowerCorner" ).text().split(" ")[0];
+		result["ymin"] = $xml.find( "gml\\:lowerCorner" ).text().split(" ")[1];
+		result["xmax"] = $xml.find( "gml\\:upperCorner" ).text().split(" ")[0];
+		result["ymax"] = $xml.find( "gml\\:upperCorner" ).text().split(" ")[1];
+		return result;
+	}
+
+	//TileMapService GetTileCacheInfo
+	function encodeGetTileCacheInfo(token)
+	{
+		var result = "<gt:GetTileCacheInfoInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t" + ("<gt:Token>" + token + "</gt:Token>") + "\r\n\t\t\t\t</gt:GetTileCacheInfoInput>";
+		var cdata = "<![CDATA[" + result + "]]>";
+		result = "<gis:getTileCacheInfo xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:getTileCacheInfo>";
+		return result;
+	}
+	
+	function decodeGetTileCacheInfo(response)
+	{
+		var result = [];
+		$xml = parseResponseAsXml(response);
+		var tileNum =1;
+		for(var i =0;i<tileNum;i++){
+			var tileInfo = {"tileCacheName":"","dataType":"","tileCacheServerURL":"","tileSchemaID":"","layerId":"","startLevel":"","endLevel":"","yAxesDirection":"","xmax":"","xmin":"","ymax":"","ymin":"","oregionPointX":"","oregionPointY":"","imageSize":"","scaleFactor":"","imgType":"","expires":"","isTransparence":"","isVisible":"","isBaseMap":"","groundDPI":"","expires":"","expires":"","expires":"","expires":"","expires":"","expires":""};
+			tileInfo["tileCacheName"] = $xml.find( "gt\\:TileCacheName" ).text();
+			tileInfo["dataType"] = $xml.find( "gt\\:Datatype" ).text();
+			tileInfo["tileCacheServerURL"] = $xml.find( "gt\\:TileCacheServerURL" ).text();
+			tileInfo["tileSchemaID"] = $xml.find( "gt\\:TileSchemaID" ).text();
+			tileInfo["layerId"] = $xml.find( "gt\\:LayerID" ).text();
+			tileInfo["startLevel"] = parseInt($xml.find( "gt\\:StartLevel" ).text());
+			tileInfo["endLevel"] = parseInt($xml.find( "gt\\:EndLevel" ).text());
+			tileInfo["yAxesDirection"] = $xml.find( "gt\\:YAxesDirection" ).text();
+			tileInfo["xmax"] = parseFloat($xml.find( "gt\\:XMAX" ).text());
+			tileInfo["xmin"] = parseFloat($xml.find( "gt\\:XMIN" ).text());
+			tileInfo["ymax"] = parseFloat($xml.find( "gt\\:YMAX" ).text());
+			tileInfo["ymin"] = parseFloat($xml.find( "gt\\:YMIN" ).text());
+			tileInfo["oregionPointX"] = parseFloat($xml.find( "gml\\:pos" ).text().split(" ")[0]);
+			tileInfo["oregionPointY"] = parseFloat($xml.find( "gml\\:pos" ).text().split(" ")[1]);
+			tileInfo["imageSize"] = parseFloat($xml.find( "gt\\:ImageSize" ).text());
+			tileInfo["scaleFactor"] = parseInt($xml.find( "gt\\:ScaleFactor" ).text());
+			tileInfo["imgType"] = $xml.find( "gt\\:Type" ).text();
+			tileInfo["isTransparence"] = $xml.find( "gt\\:IsTransparence" ).text() =="true" ? (true) : (false) ;
+			tileInfo["isVisible"] = $xml.find( "gt\\:IsVisible" ).text() == "true" ? (true) : (false);
+			tileInfo["isBaseMap"] = $xml.find( "gt\\:BaseMap" ).text()== "true" ? (true) : (false);
+			tileInfo["groundDPI"] = parseFloat($xml.find( "gt\\:GroundDPI" ).text());
+			result.push(tileInfo);
+		}
+		return result;
+	}
+
+	//MapService GetMap
+	function encodeGetMap(token,layers,imageType,displaySchemaID,version,gray,imageSize,boundedBy,mapId,schema)
+	{
+		var result = {};
+		var psrUris = {};
+		var option = {};
+		var boundedXml = {};
+		var layersXml = "";
+		var layerXml = "";
+		if (layers.length > 0)
+		{
+			layersXml = "<gt:Layers xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" >$</gt:Layers>";
+		}
+		for (var layerName in layers)
+		{
+			var layer = layers[layerName];
+			if (layer.psrType)
+			{
+				layerXml = layerXml + "<gt:Layer>";
+				layerXml = layerXml + ("<gt:PSRType>" + layer.psrType + "</gt:PSRType>");
+				psrUris = layer.psrUris;
+
+				if (!(psrUris ===undefined) && psrUris.length > 0)
+				{
+					layerXml = layerXml + "<gt:DrawFilter>";
+					for (var psrUri in psrUris)
+					{
+						
+						layerXml = layerXml + ("<gt:PSRURI>" + psrUri + "</gt:PSRURI>");
+					}
+					option = layer.isShow ? (LayerFilter.SHOW_PSR) : (LayerFilter.HIDE_PSR);
+					layerXml = layerXml + ("<gt:Option>" + option + "</gt:Option>");
+					layerXml = layerXml + "</gt:DrawFilter>";
+				}
+				layerXml = layerXml + "</gt:Layer>";
+			}
+		}
+		layersXml = layersXml.replace("$", layerXml);
+		result = "<gt:GetMapInput xmlns:gml=\"http://www.opengis.net/gml\" xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t" + ("<gt:Token>" + token + "</gt:Token>") + "\r\n\t\t\t\t\t" + ("<gt:MapID>" + mapId + "</gt:MapID>") + "\r\n\t\t\t\t\t" + ("<gt:ImageType>\r\n\t\t\t\t\t\t" + ("<gt:Type>" + (imageType ? (imageType.type) : ("")) + "</gt:Type>") + "\r\n\t\t\t\t\t\t" + ("<gt:IsTransparence>" + (imageType ? (imageType.isTransparence) : (false)) + "</gt:IsTransparence>") + "\r\n\t\t\t\t\t</gt:ImageType>") + "\r\n\t\t\t\t\t" + ("<gt:Gay>" + gray + "</gt:Gay>") + "\r\n\t\t\t\t\t" + ("<gt:DisplaySchemaID>" + displaySchemaID + "</gt:DisplaySchemaID>") + "\r\n\t\t\t\t\t" + ("<gt:Version>" + version + "</gt:Version>") + "\r\n\t\t\t\t\t" + ("<gt:Schema>" + schema + "</gt:Schema>") + "\r\n\t\t\t\t\t" + ("<gt:ImageSize>\r\n\t\t\t\t\t\t" + ("<gt:Width>" + imageSize.width + "</gt:Width>") + "\r\n\t\t\t\t\t\t" + ("<gt:Height>" + imageSize.height + "</gt:Height>") + "\r\n\t\t\t\t\t</gt:ImageSize>") + "\r\n\t\t\t\t"+"&layers&"+"&boundedBy&"+"</gt:GetMapInput>";
+		result = result.replace("&layers&", layersXml);
+		if (boundedBy)
+		{
+			boundedXml = "<gml:boundedBy xmlns:gml=\"http://www.opengis.net/gml\">\r\n\t\t\t\t\t\t" + ("<gml:Envelope>\r\n\t\t\t\t\t\t\t" + ("<gml:lowerCorner>" + boundedBy.xmin + " " + boundedBy.ymin + "</gml:lowerCorner>") + "\r\n\t\t\t\t\t\t\t" + ("<gml:upperCorner>" + boundedBy.xmax + " " + boundedBy.ymax + "</gml:upperCorner>") + "\r\n\t\t\t\t\t\t</gml:Envelope>") + "\r\n\t\t\t\t\t</gml:boundedBy>";
+			result = result.replace("&boundedBy&", boundedXml);
+		}
+		else
+		{
+			result = result.replace("&boundedBy&", "");
+		}
+		var cdata = "<![CDATA[" + result + "]]>";
+		result = "<gis:getMap xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:getMap>";
+		return result;
+	}
+	
+	function decodeGetMap(response)
+	{
+		var result = {};
+		$xml = parseResponseAsXml(response);
+	
+		var imageType = {};
+		imageType.type = $xml.find( "gt\\:Type" ).text();
+		imageType.isTransparence = $xml.find( "gt\\:IsTransparence" ).text() == "true" ? (true) : (false);
+		var boundedBy = {};
+		var lowerCorner = $xml.find( "gml\\:lowerCorner" ).text();
+		var upperCorner = $xml.find( "gml\\:upperCorner" ).text();
+		var lowerCorners = lowerCorner.split(" ");
+		var upperCorners = upperCorner.split(" ");
+		boundedBy.xmin = parseFloat(lowerCorners[0]);
+		boundedBy.ymin = parseFloat(lowerCorners[1]);
+		boundedBy.xmax = parseFloat(upperCorners[0]);
+		boundedBy.ymax = parseFloat(upperCorners[1]);
+		
+		result.mapId = $xml.find( "gt\\:MapID" ).text();
+		result.imageType = imageType;
+		result.boundedBy = boundedBy;
+		result.url = $xml.find( "gt\\:URL" ).text();
+		return result;
+	}
+	
+	//BaseService GetLayers
+	function encodeGetLayers(token,mapType )
+	{
+		var result = "<gt:GetLayersInput xmlns:gt=\"http://www.sgcc.com.cn/sggis/service/schema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.sgcc.com.cn/sggis/service/schema gistypes.xsd\">\r\n\t\t\t\t\t" + ("<gt:Token>" + token + "</gt:Token>") + "\r\n\t\t\t\t\t" + ("<gt:MapType>" + mapType + "</gt:MapType>") + "\r\n\t\t\t\t</gt:GetLayersInput>";
+		var cdata = "<![CDATA[" + result + "]]>";
+		result = "<gis:getLayers xmlns:gis=\"http://www.sgcc.com.cn/sggis/service/gisservice\">\r\n\t\t\t\t\t" + ("<gis:inputXML>" + cdata + "</gis:inputXML>") + "\r\n\t\t\t\t</gis:getLayers>";
+		return result;
+	}
+	
+	function parseLayer($xml,layersBean,gridLayerDic,tileLayerDic){
+		var localLayers = {};
+		var localLayer = {};
+		var localAlias = {};
+		var localName = {};
+		var localLayerType = {};
+		var localIsBase = false;
+		var localIsVisible = false;
+		var localSelectable = false;
+		var localPSRType = {};
+
+		$xml.children( "gt\\:Layers" ).each(function() {
+			localLayers = {layersList:[],layerList:[]};
+			layersBean.layersList.push(localLayers);
+			var $newXml = $(this);
+			localLayers["alias"] = $newXml.children( "gt\\:Alias" ).first().text();
+			function callBack(){
+				parseLayer($newXml, localLayers, gridLayerDic, tileLayerDic);
+			}
+			callBack()});
+		$xml.children( "gt\\:Layer" ).each (function() {
+			localLayer = {layersList:[],layerList:[]};
+			var $childXml = $(this);
+			localAlias = $childXml.children( "gt\\:Alias" ).text();
+			localName = $childXml.children( "gt\\:Name" ).text();
+			localLayerType = $childXml.children( "gt\\:LayerType" ).text();
+			localIsBase = $childXml.children( "gt\\:IsBase" ).text()== "true" ? (true) : (false);
+			localIsVisible = $childXml.children( "gt\\:IsVisible" ).text() == "true" ? (true) : (false);
+			localSelectable = $childXml.children( "gt\\:Selectable" ).text() == "true" ? (true) : (false);
+			localPSRType = $childXml.children( "gt\\:PSRType" ).text();
+			localLayer["alias"] = localAlias;
+			localLayer["isVisible"] = localIsVisible;
+			localLayer["selectable"] = localSelectable;
+			localLayer["isTileLayer"]  = localPSRType ? (false) : (true);
+			localLayer["name"]  = localName;
+			localLayer["layerType"]  = localLayerType;
+			if (localLayer.isTileLayer)
+			{
+				localLayer.isBase = localIsBase;
+				tileLayerDic[localName] = localLayer;
+			}
+			else
+			{
+				localLayer.psrType = localPSRType;
+				gridLayerDic[localPSRType] = localLayer;
+			}
+			layersBean.layerList.push(localLayer);});
+		return;
+	}
+	
+	function decodeGetLayers(response)
+	{
+		var cacheLayer = [];
+		var result = {};
+		$xml = parseResponseAsXml(response);
+		var layersBean = {layersList:[],layerList:[]};
+		var GRID_LAYER_DIC = {};
+		var TILE_LAYER_DIC = {};
+		parseLayer($xml.find("gt\\:GetLayersOutput"),layersBean,GRID_LAYER_DIC,TILE_LAYER_DIC);
+		result["layersBean"]=layersBean;
+		result["GRID_LAYER_DIC"]=GRID_LAYER_DIC;
+		result["TILE_LAYER_DIC"]=TILE_LAYER_DIC;
+		return result;
+	}
+	
+	var serverAddr = "http://10.157.177.8:7011/sggis/services";
+	serverAddr = "http://127.0.0.1:8080";
+
+	var userName = "KSH@KSH";
+	var password = "ksh_1206";
+	var appKey = "";
+	var identifier = "";
+	var token = "";
+	var tileCacheServerURL = "";
+	var layers = [];
+	var tileInfo = {};
+	
+	function getConnectionCallBack(xmlHttpRequest,status){
+	
+		var result = decodeGetConnectionResponse($(xmlHttpRequest.responseXML));
+		console.log("get token successful");
+		console.log(result.token);
+		token = result.token;
+		goGetTileInfo();
+
+	}
+
+	function goGetToken(){
+		var  getConnectionBody = encodeGetConnectionBody(userName,password,appKey,identifier);
+		var soapResult = encodeSoap(getConnectionBody);
+		var endPoint =  serverAddr+"/BaseService";
+
+		$.ajax({url:endPoint,type: "POST",dataType: "xml",data: soapResult,complete: getConnectionCallBack,contentType: "text/xml; charset=\"utf-8\"",headers: {SOAPAction: ""}}); 
+	}
+	
+	function getTileCacheInfoCallBack(xmlHttpRequest,status){
+	
+		var result = decodeGetTileCacheInfo($(xmlHttpRequest.responseXML));
+		tileCacheServerURL = result[0].tileCacheServerURL;
+		tileInfo = result[0];
+		console.log("get tileInfo successful");
+		console.log(result);
+		
+		console.log(tileCacheServerURL);
+				goGetLayers();
+	}
+	
+	function goGetTileInfo(){
+		var  getTileCacheInfoBody = encodeGetTileCacheInfo(token);
+		var soapResult = encodeSoap(getTileCacheInfoBody);
+		var endPoint =  serverAddr+"/TileMapService";
+		$.ajax({url: endPoint,type: "POST",dataType: "xml",data: soapResult,complete: getTileCacheInfoCallBack,contentType: "text/xml; charset=\"utf-8\"",headers: {SOAPAction: ""}}); 
+	}
+	
+	function getLayersCallBack(xmlHttpRequest,status){
+	
+		var result = decodeGetLayers($(xmlHttpRequest.responseXML));
+		layers = Object.values(result.GRID_LAYER_DIC);
+		console.log("get Layers result");
+		console.log(result);
+				goGetMap();
+
+	}
+	
+	function goGetLayers(){
+		var  getLayersBody = encodeGetLayers(token,"1001");
+		var soapResult = encodeSoap(getLayersBody);
+		var endPoint =  serverAddr+"/BaseService-getLayer";
+		$.ajax({url: endPoint,type: "POST",dataType: "xml",data: soapResult,complete: getLayersCallBack,contentType: "text/xml; charset=\"utf-8\"",headers: {SOAPAction: ""}}); 
+	}
+	
+	function getMapCallBack(xmlHttpRequest,status){
+	
+		var result = decodeGetMap($(xmlHttpRequest.responseXML));
+		console.log("get Map result");
+		console.log(result);
+	}
+	
+	function goGetMap(){
+		var  getMapBody = encodeGetMap(token,
+		layers,{type:tileInfo.imgType,isTransparence:tileInfo.isTransparence},
+		"","","0",{width:1388,height:708},{xmin:"457591.623880474",ymin:"297029.74088543997",xmax:"551975.623880474",ymax:"345173.74088543997"},"110","");
+		var soapResult = encodeSoap(getMapBody);
+		var endPoint =  serverAddr+"/MapService";
+		$.ajax({url: endPoint,type: "POST",dataType: "xml",data: soapResult,complete: getMapCallBack,contentType: "text/xml; charset=\"utf-8\"",headers: {SOAPAction: ""}}); 
+	}
+	
+	goGetToken();
+	
+	
+</script>
+</body>
+</html>
